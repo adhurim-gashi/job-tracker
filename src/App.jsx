@@ -46,7 +46,8 @@ function App() {
 
     return initialJobs
   })
-  const [isFormOpen, setIsFormOpen] = useState(false); 
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState(""); 
   const [formData, setFormData] = useState({
     company: "", 
     role: "", 
@@ -62,6 +63,11 @@ function App() {
   const appliedJobs = jobs.filter((job) => job.status === "Applied").length
   const interviewJobs = jobs.filter((job) => job.status === "Interview").length 
   const offerJobs = jobs.filter((job) => job.status === "Offer").length
+  const filteredJobs = jobs.filter((job) => {
+    const searchText = `${job.company} ${job.role} ${job.location}`.toLowerCase()
+    
+    return searchText.includes(searchTerm.toLowerCase())
+  })
 
 
   function handleAddJob(event) {
@@ -104,6 +110,12 @@ function App() {
       return job
     })
     
+    setJobs(updatedJobs)
+  }
+
+  function handleDeleteJob(jobId) {
+    const updatedJobs = jobs.filter((job) => job.id !== jobId) 
+
     setJobs(updatedJobs)
   }
 
@@ -216,8 +228,17 @@ function App() {
           <StatCard label="Applied" value={appliedJobs}/>
           <StatCard label="Interviews" value={interviewJobs}/>
           <StatCard label="Offers" value={offerJobs}/>
-
         </section>
+
+        <div className="mt-6">
+          <input 
+          type="text"
+          placeholder="Search jobs by company, role, or location..."
+          value={searchTerm}
+          onChange={(event) => setSearchTerm(event.target.value)}
+          className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm outline-none transition placeholder:text-zinc-600 focus:border-cyan-400"
+          />
+        </div>
 
         <section className="mt-8 grid gap-4 lg:grid-cols-5">
           {stages.map((stage) => (
@@ -227,12 +248,20 @@ function App() {
             >
               <h2 className="font-semibold">{stage}</h2>
               <div className="mt-4 space-y-3">
-                {
-                  jobs.filter((job) => job.status === stage)
-                  .map((job) => (
-                    <JobCard key={job.id} job={job} onStatusChange={handleStatusChange} />
-                  ))
-                }
+                {filteredJobs.filter((job) => job.status === stage).length === 0 ? (
+                  <p className="text-sm text-zinc-500">No jobs here</p>
+                ): (
+                  filteredJobs
+                    .filter((job => job.status === stage))
+                    .map((job) => (
+                      <JobCard 
+                      key={job.id}
+                      job={job}
+                      onStatusChange={handleStatusChange}
+                      onDeleteJob={handleDeleteJob}
+                      />
+                    ))
+                )}
               </div>
             </div>
           ))}
@@ -251,27 +280,37 @@ function StatCard({ label, value }) {
   )
 }
 
-function JobCard ({job, onStatusChange}) {
+function JobCard ( { job, onStatusChange, onDeleteJob }) {
   return (
-    <article className="rounded-lg border border-zinc-800 bg-zinc-950 p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h3 className="font-semibold text-zinc-100">{job.role}</h3>
-          <p className="mt-1 text-sm text-zinc-400">{job.company}</p>
-        </div>
-
-       <span className="rounded-full bg-cyan-400/10 px-2.5 py-1 text-xs font-medium text-cyan-300">
-       {job.type}
-       </span>
+    <article className="rounded-lg border border-zinc-800 bg-zinc-950 p-4 transition hover:border-zinc-700">
+      <div>
+        <h3 className="font-semibold leading-snug text-zinc-100">{job.role}</h3>
+        <p className="mt-1 text-sm text-zinc-400">{job.company}</p>
       </div>
+
       <p className="mt-4 text-sm text-zinc-500">{job.location}</p>
+
+      <div className="mt-4 flex items-center justify-between gap-3">
+        <span className="rounded-full bg-cyan-400/10 px-2.5 py-1 text-xs font-medium text-cyan-300">
+        {job.type}
+        </span>
+
+        <button type="button"
+        onClick={() => onDeleteJob(job.id)}
+        className="text-xs font-medium text-red-400 transition hover:text-red-300"
+        >
+          Delete
+        </button>
+      </div>
       <select
       value={job.status}
-      onChange={(event) => onStatusChange(job.id, event.target.value)} 
+      onChange={(event) => onStatusChange(job.id, event.target.value)}
       className="mt-4 w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-zinc-200 outline-none transition focus:border-cyan-400"
       >
         {stages.map((stage) => (
-          <option key={stage} value={stage}>{stage}</option>
+          <option key={stage} value={stage}>
+            {stage}
+          </option>
         ))}
       </select>
     </article>
