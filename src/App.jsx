@@ -61,9 +61,9 @@ function App() {
 
     const newJob = {
       id: Date.now(), 
-      company: formData.company, 
-      role: formData.role, 
-      location: formData.location, 
+      company: formData.company.trim(), 
+      role: formData.role.trim(), 
+      location: formData.location.trim() || "Remote", 
       status: formData.status, 
       type: formData.type, 
     }
@@ -81,6 +81,19 @@ function App() {
     setIsFormOpen(false)
   }
 
+  function handleStatusChange(jobId, newStatus) {
+    const updatedJobs = jobs.map((job) => {
+      if (job.id === jobId) {
+        return {
+          ...job, 
+          status: newStatus,
+        }
+      }
+      return job
+    })
+    
+    setJobs(updatedJobs)
+  }
 
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -205,7 +218,7 @@ function App() {
                 {
                   jobs.filter((job) => job.status === stage)
                   .map((job) => (
-                    <JobCard key={job.id} job={job} />
+                    <JobCard key={job.id} job={job} onStatusChange={handleStatusChange} />
                   ))
                 }
               </div>
@@ -226,7 +239,7 @@ function StatCard({ label, value }) {
   )
 }
 
-function JobCard ({job}) {
+function JobCard ({job, onStatusChange}) {
   return (
     <article className="rounded-lg border border-zinc-800 bg-zinc-950 p-4">
       <div className="flex items-start justify-between gap-3">
@@ -240,8 +253,18 @@ function JobCard ({job}) {
        </span>
       </div>
       <p className="mt-4 text-sm text-zinc-500">{job.location}</p>
+      <select
+      value={job.status}
+      onChange={(event) => onStatusChange(job.id, event.target.value)} 
+      className="mt-4 w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-zinc-200 outline-none transition focus:border-cyan-400"
+      >
+        {stages.map((stage) => (
+          <option key={stage} value={stage}>{stage}</option>
+        ))}
+      </select>
     </article>
   )
 }
 
 export default App;
+
