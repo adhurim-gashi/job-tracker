@@ -246,22 +246,27 @@ function App() {
             key={stage}
             className="min-h-80 rounded-xl border border-zinc-800 bg-zinc-900/70 p-4"
             >
-              <h2 className="font-semibold">{stage}</h2>
+              <div className="flex items-center justify-between">
+                <h2 className="font-semibold">{stage}</h2>
+                <span className="rounded-full bg-zinc-800 px-2 py-1 text-xs text-zinc-400">
+                  {filteredJobs.filter((job) => job.status === stage).length}
+                </span>
+              </div>
               <div className="mt-4 space-y-3">
-                {filteredJobs.filter((job) => job.status === stage).length === 0 ? (
-                  <p className="text-sm text-zinc-500">No jobs here</p>
-                ): (
-                  filteredJobs
-                    .filter((job => job.status === stage))
-                    .map((job) => (
-                      <JobCard 
-                      key={job.id}
-                      job={job}
-                      onStatusChange={handleStatusChange}
-                      onDeleteJob={handleDeleteJob}
-                      />
-                    ))
-                )}
+              {filteredJobs.filter((job) => job.status === stage).length === 0 ?(
+                <p className="text-sm text-zinc-500">No jobs here</p>
+              ): (
+                filteredJobs
+                .filter((job) => job.status === stage)
+                .map((job) => (
+                  <JobCard 
+                  key={job.id}
+                  job={job}
+                  onStatusChange={handleStatusChange}
+                  onDeleteJob={handleDeleteJob}
+                  />
+                ))
+              )}
               </div>
             </div>
           ))}
