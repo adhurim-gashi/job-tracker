@@ -1,4 +1,4 @@
-import { useState } from "react"; 
+import { useEffect, useState } from "react"; 
 
 const stages = [
   "Saved", 
@@ -37,7 +37,15 @@ const initialJobs = [
 
 
 function App() {
-  const [jobs, setJobs] = useState(initialJobs);
+  const [jobs, setJobs] = useState(() => {
+    const savedJobs = localStorage.getItem("applyboard-jobs")
+
+    if (savedJobs) {
+      return JSON.parse(savedJobs)
+    }
+
+    return initialJobs
+  })
   const [isFormOpen, setIsFormOpen] = useState(false); 
   const [formData, setFormData] = useState({
     company: "", 
@@ -46,6 +54,10 @@ function App() {
     status: "Saved", 
     type: "Full-time", 
   })
+
+  useEffect(() => {
+    localStorage.setItem("applyboard-jobs", JSON.stringify(jobs))
+  }, [jobs])
   const totalJobs = jobs.length 
   const appliedJobs = jobs.filter((job) => job.status === "Applied").length
   const interviewJobs = jobs.filter((job) => job.status === "Interview").length 
