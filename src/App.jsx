@@ -1,3 +1,5 @@
+import { useState } from "react"; 
+
 const stages = [
   "Saved", 
   "Applied", 
@@ -6,7 +8,7 @@ const stages = [
   "Rejected", 
 ]
 
-const jobs = [
+const initialJobs = [
   {
     id: 1,
     company: "Spotify", 
@@ -35,10 +37,50 @@ const jobs = [
 
 
 function App() {
+  const [jobs, setJobs] = useState(initialJobs);
+  const [isFormOpen, setIsFormOpen] = useState(false); 
+  const [formData, setFormData] = useState({
+    company: "", 
+    role: "", 
+    location: "", 
+    status: "Saved", 
+    type: "Full-time", 
+  })
   const totalJobs = jobs.length 
   const appliedJobs = jobs.filter((job) => job.status === "Applied").length
   const interviewJobs = jobs.filter((job) => job.status === "Interview").length 
   const offerJobs = jobs.filter((job) => job.status === "Offer").length
+
+
+  function handleAddJob(event) {
+    event.preventDefault()
+
+    if (!formData.company.trim() || !formData.role.trim()) {
+      return
+    }
+
+    const newJob = {
+      id: Date.now(), 
+      company: formData.company, 
+      role: formData.role, 
+      location: formData.location, 
+      status: formData.status, 
+      type: formData.type, 
+    }
+
+    setJobs([...jobs, newJob])
+
+    setFormData({
+      company: "", 
+      role: "", 
+      location: "", 
+      status: "Saved",
+      type: "Full-time", 
+    })
+
+    setIsFormOpen(false)
+  }
+
 
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -50,14 +92,99 @@ function App() {
               Job Application Tracker
             </h1>
             <p className="mt-3 max-w-2xl text-zinc-400">
-              Track your applications from saved jobs to offer in one focused board.
+              Track your applications from saved jobs to offers in one focused board.
             </p>
           </div>
 
-          <button className="rounded-lg bg-cyan-400 px-5 py-3 font-semibold text-zinc-950 transition hover:bg-cyan-300">
+          <button 
+          onClick={() => setIsFormOpen(true)} 
+          className="rounded-lg bg-cyan-400 px-5 py-3 font-semibold text-zinc-950 transition hover:bg-cyan-300">
             Add Job
           </button>
         </header>
+
+        {isFormOpen && (
+            <form
+            onSubmit={handleAddJob}
+            className="mt-6 rounded-xl border border-zinc-800 bg-zinc-900 p-4">
+              <div className="flex items-center justify-between">
+                <h2 className="font-semibold">Add a new job</h2>
+                <button
+                type="button"
+                onClick={() => setIsFormOpen(false)} 
+                className="text-md font-medium text-red-400 transition hover:text-red-300"
+                >
+                  Cancel
+                </button>
+              </div>
+
+              <div className="mt-4 grid gap-4 md:grid-cols-2">
+                <input 
+                type="text"
+                placeholder="Company"
+                value={formData.company}
+                onChange={(event) => 
+                  setFormData({...formData, company: event.target.value })
+                } 
+                className="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm outline-none transition placeholder:text-zinc-600 focus:border-cyan-400"
+                />
+
+                <input 
+                type="text"
+                placeholder="Role"
+                value={formData.role}
+                onChange={(event) => 
+                  setFormData({...formData, role: event.target.value})
+                } 
+                className="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm outline-none transition placeholder:text-zinc-600 focus:border-cyan-400"
+                />
+
+
+              <input 
+                type="text"
+                placeholder="Location"
+                value={formData.location}
+                onChange={(event) => 
+                  setFormData({...formData, location: event.target.value})
+                } 
+
+                className="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm outline-none transition placeholder:text-zinc-600 focus:border-cyan-400"
+                />
+                
+                <select 
+                value={formData.status}
+                onChange={(event) => 
+                  setFormData({...formData, status: event.target.value})
+                }
+                className="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm outline-none transition focus:border-cyan-400"
+                >
+                  {stages.map((stage) => (
+                    <option key={stage} value={stage}>
+                      {stage}
+                    </option>
+                  ))}
+                </select>
+
+                <select
+                value={formData.type}
+                onChange={(event) => 
+                  setFormData({...formData, type: event.target.value})
+                }
+                className="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm outline-none transition focus:border-cyan-400">
+                  <option value="Full-time">Full-time</option>
+                  <option value="Internship">Internship</option>
+                  <option value="Part-time">Part-time</option>
+                  <option value="Contract">Contract</option>
+                </select>
+
+                <button type="submit"
+                className="rounded-lg bg-cyan-400 px-5 py-2 font-semibold text-zinc-950 transition hover:bg-cyan-300 md:col-span-2"
+                >
+                  Save Job
+                </button>
+              </div>
+            </form>
+          )}
 
         <section className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard label="Total Jobs" value={totalJobs}/>
